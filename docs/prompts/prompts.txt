@@ -1,0 +1,206 @@
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > i want to implement a python library called travessera. Travessera is an abstraction layer for microservices.                                                                       │
+│                                                                                                                                                                                       │
+│   Instead of a programmer who needs to call an external microservice by implementing custom functions that in turn open a HTTP / REST connection to the external microservice,        │
+│   travessera allows to define proxy functions, called travesseras, by the way of writing a dummy function with a decorator. The decorator is in charge of providing, behind the       │
+│   scenes, the logic for opening the HTTP connection, doing the call to the external microservice, processing the result and returning it back to the calling function. In this way,   │
+│   programming microservices appears more like writing a single service or monolith, without the engineer needing to attend things like service discovery, HTTP errors or timeouts,    │
+│   marshalling/unmarshalling payloads and return values, etc. It should work for both sync and async programming, and also full pydantic.                                              │
+│                                                                                                                                                                                       │
+│   For example:                                                                                                                                                                        │
+│                                                                                                                                                                                       │
+│   In the business logic:                                                                                                                                                              │
+│                                                                                                                                                                                       │
+│   class CustomerDeal:                                                                                                                                                                 │
+│       customer_name: str                                                                                                                                                              │
+│       customer_id: int                                                                                                                                                                │
+│       deal_name: str                                                                                                                                                                  │
+│       deal_id: int                                                                                                                                                                    │
+│       deal_type: str                                                                                                                                                                  │
+│       deal_datetime: datetime                                                                                                                                                         │
+│       deal_price: float                                                                                                                                                               │
+│                                                                                                                                                                                       │
+│   async def find_customer_deals(customer_name: str) -> List[CustomerDeal]:                                                                                                            │
+│       customer = await find_customer(customer_name)                                                                                                                                   │
+│       if customer is None:                                                                                                                                                            │
+│           raise Exception("Customer not found")                                                                                                                                       │
+│       deal_types = customer["deal_types"]                                                                                                                                             │
+│       deals = await find_deals(deal_types)                                                                                                                                            │
+│       return [CustomerDeal(                                                                                                                                                           │
+│           customer_name=customer_name,                                                                                                                                                │
+│           customer_id=customer["id"],                                                                                                                                                 │
+│           deal_name=deal["name"],                                                                                                                                                     │
+│           deal_id=deal["id"],                                                                                                                                                         │
+│           deal_type=deal["type"],                                                                                                                                                     │
+│           deal_datetime=deal["datetime"],                                                                                                                                             │
+│           deal_price=deal["price"],                                                                                                                                                   │
+│       ) for deal in deals]                                                                                                                                                            │
+│                                                                                                                                                                                       │
+│   And in the travessera config file, let's say it is called travessera_config.py for this project:                                                                                    │
+│                                                                                                                                                                                       │
+│       vpc_authentication = ApiKeyAuthentication(                                                                                                                                      │
+│           api_key=os.getenv("INTERNAL_SERVICES_API_KEY"),                                                                                                                             │
+│       )                                                                                                                                                                               │
+│                                                                                                                                                                                       │
+│       customer_service = Service(                                                                                                                                                     │
+│           name="customers",                                                                                                                                                           │
+│           base_url="https://api.customers.mycompany.com/api",                                                                                                                         │
+│           timeout=60, # in seconds                                                                                                                                                    │
+│           authentication=vpc_authentication,                                                                                                                                          │
+│           cache=None,                                                                                                                                                                 │
+│       )                                                                                                                                                                               │
+│                                                                                                                                                                                       │
+│       deals_service = Service(                                                                                                                                                        │
+│           name="deals",                                                                                                                                                               │
+│           base_url="https://api.deals.mycompany.com/api",                                                                                                                             │
+│           timeout=90,                                                                                                                                                                 │
+│           authentication=vpc_authentication,                                                                                                                                          │
+│           cache=None,                                                                                                                                                                 │
+│       )                                                                                                                                                                               │
+│                                                                                                                                                                                       │
+│       travessera_vpc = Travessera(                                                                                                                                                    │
+│           services=[customer_service, deals_service],                                                                                                                                 │
+│           monitor=None,                                                                                                                                                               │
+│           tracer=None,                                                                                                                                                                │
+│       )                                                                                                                                                                               │
+│                                                                                                                                                                                       │
+│       @travessera_vpc.endpoint(                                                                                                                                                       │
+│           service="customers",                                                                                                                                                        │
+│           endpoint="/customer/name/{customer_name}",                                                                                                                                  │
+│           method="GET",                                                                                                                                                               │
+│           deserializer=lambda response_json: {"id": customer["id"], "name": customer["name"], "timezone": customer["timezone"]},                                                      │
+│           timeout=30,                                                                                                                                                                 │
+│       )                                                                                                                                                                               │
+│       async def find_customer(customer_name: str) -> dict:                                                                                                                            │
+│           pass                                                                                                                                                                        │
+│                                                                                                                                                                                       │
+│       @travessera_vpc.endpoint(                                                                                                                                                       │
+│           service="deals",                                                                                                                                                            │
+│           endpoint="/deal",                                                                                                                                                           │
+│           method="POST",                                                                                                                                                              │
+│           serializer=lambda deal_types: {"deal_types": [deal_type.name for deal_type in deal_types]},                                                                                 │
+│           deserializer=lambda response_json: [{"id": deal["id"], "type": deal["type"], "datetime": deal["datetime"], "price": deal["price"]} for deal in                              │
+│   response_json["data"]["deals"]]                                                                                                                                                     │
+│           timeout=45,                                                                                                                                                                 │
+│       )                                                                                                                                                                               │
+│       async def find_deals(deal_types: List[DealType]) -> List[dict]:                                                                                                                 │
+│           pass                                                                                                                                                                        │
+│                                                                                                                                                                                       │
+│   Where ApiKeyAuthentication, Service and Travessera are classes defined by the travessera python library.                                                                            │
+│                                                                                                                                                                                       │
+│   That's all what is needed to be defined. You can see the in the business layer, calls to external services are like local function calls, and in the travessera config file, only   │
+│   a dummy function is defined for every external endpoint that needs to be called and the decorator specifies the parameters that the travessera library must use to generate the     │
+│   REST call to the external service.                                                                                                                                                  │
+│                                                                                                                                                                                       │
+│   For the sake of simplicity, in this first iteration we will assume:                                                                                                                 │
+│                                                                                                                                                                                       │
+│   - No cache implementation / provider.                                                                                                                                               │
+│   - No cache invalidation strategy / mechanism.                                                                                                                                       │
+│   - serializers are needed to build JSON payloads to be passed to the external endpoint.                                                                                              │
+│   - deserializers are needed to decode the JSON response returned by the external endpoint.                                                                                           │
+│   - the decorators can throw custom Exception for common HTTP errors, timeout errors, or DNS server name or IP not accessible errors. We need a good custom exceptions structure.     │
+│   - Relative usage of pydantic approach since the annotated dummy functions don't return specific classes but lists or lists.                                                         │
+│   - Only API key authentication for now.                                                                                                                                              │
+│   - No proxy server support.                                                                                                                                                          │
+│   - No monitor / log utility for external service calls.                                                                                                                              │
+│   - No distributed tracing utility for external service calls.                                                                                                                        │
+│                                                                                                                                                                                       │
+│   In scope:                                                                                                                                                                           │
+│                                                                                                                                                                                       │
+│   - Sync and async support for the decorators.                                                                                                                                        │
+│   - GET and POST HTTP verbs supported.                                                                                                                                                │
+│   - timeout specified in the decorator overrides the timeout specified in the Service constructor.                                                                                    │
+│   - Module structure with relevant artifacts accessible to the library users.                                                                                                         │
+│   - The open-source library will be available in pypi and Github, so it can be imported to developer's project in their requirements.txt.                                             │
+│                                                                                                                                                                                       │
+│   To call the external services, we must used plain python, or instead the most used and more compatible python dependency, because this library aims to be used by thousands of      │
+│   developers.                                                                                                                                                                         │
+│                                                                                                                                                                                       │
+│   Please analyze and think deeply about the problem, and then:                                                                                                                        │
+│                                                                                                                                                                                       │
+│   - Ask relevant questions to me.                                                                                                                                                     │
+│   - Decide the best HTTP client to use.                                                                                                                                               │
+│   - Suggest improvements about the proposed syntax and behaviour of the decorators and travessera initialization and validate them with me.                                           │
+│   - Architect the library.                                                                                                                                                            │
+│   - Plan the implementation phase.                                                                                                                                                    │
+│                                                                                                                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > wow! Impressive!                                                                                                                                                                    │
+│                                                                                                                                                                                       │
+│   This is my feedback about your questions so you can refine our approach and the implementation plan:                                                                                │
+│                                                                                                                                                                                       │
+│     1. Query Parameters                                                                                                                                                               │
+│                                                                                                                                                                                       │
+│     In your example, you show path parameters like /customer/name/{customer_name}. How should query parameters be handled? For example:                                               │
+│     - Should they be automatically detected from function arguments not in the path?                                                                                                  │
+│     - Should there be explicit configuration in the decorator?                                                                                                                        │
+│     - Example: GET /deals?status=active&limit=10                                                                                                                                      │
+│                                                                                                                                                                                       │
+│   Answer: Yes, let's use your approach to handle query parameters. Also, I think that the endpoint specification can support cases like "/customer/name/{customer_id}?scope={scope}"  │
+│   where "scope" is a parameter in the dummy function signature.                                                                                                                       │
+│                                                                                                                                                                                       │
+│     2. HTTP Headers                                                                                                                                                                   │
+│                                                                                                                                                                                       │
+│     - Should endpoints support custom headers (beyond authentication)?                                                                                                                │
+│     - Should headers be configurable per endpoint or only at the service level?                                                                                                       │
+│     - What about dynamic headers that change per request?                                                                                                                             │
+│                                                                                                                                                                                       │
+│   Answer: Yes, endpoints should support custom headers. Configurable at different levels: Travessera, Service and decorator. In general, every parameter that modified the behaviour  │
+│   of the HTTP client can be defined at either level, with decorator level overriding Service level, and Service level overriding Travessera level. I have provided an example of      │
+│   overriding for the "timeout" paremeter. About the dynamic headers, I don't know what to do and will let you to decide the best approach.                                            │
+│                                                                                                                                                                                       │
+│     3. Error Handling & Retry Logic                                                                                                                                                   │
+│                                                                                                                                                                                       │
+│     - How should different HTTP status codes map to exceptions? (e.g., 404 → NotFound, 500 → ServerError)                                                                             │
+│     - Should there be automatic retry logic for certain failures (e.g., network timeouts, 5xx errors)?                                                                                │
+│     - Should the library distinguish between client errors (4xx) and server errors (5xx)?                                                                                             │
+│                                                                                                                                                                                       │
+│   Answer: Let's use your approach. Yes, we need to provide a retry logic, all configurable, let's start with some kind of parameterizable retry with exponential backoff. If you      │
+│   can, you can use a exponential backoff retry library or circuit breaker that is compatible with httpx. Yes, the library should distinguish between client and server errors, and    │
+│   your proposed structure for expections seems ok to me.                                                                                                                              │
+│                                                                                                                                                                                       │
+│     4. Request/Response Validation                                                                                                                                                    │
+│                                                                                                                                                                                       │
+│     - Should the library validate that required parameters are provided?                                                                                                              │
+│     - Should it validate response structure against expected return types?                                                                                                            │
+│     - How strict should type checking be?                                                                                                                                             │
+│                                                                                                                                                                                       │
+│   Answer: I think your proposed approach using pydantic objects work better than my approach. So it can include type checking validation. I think we need to provide a default, but   │
+│   extensible, checkings for both requests and responses.                                                                                                                              │
+│                                                                                                                                                                                       │
+│     5. Function Signature Handling                                                                                                                                                    │
+│                                                                                                                                                                                       │
+│     - How should optional parameters in the function signature be handled?                                                                                                            │
+│     - What about default values?                                                                                                                                                      │
+│     - Should *args and **kwargs be supported?                                                                                                                                         │
+│                                                                                                                                                                                       │
+│   Answer: Let's use the best practices about optional parameters, default values and support for *args and **kwargs. In general, we need the library to be easy to use for the        │
+│   developer. But if a parameters is needed for the external service endpoint call, it shoudn't be considered optional and the type checking should fail with a exception.             │
+│                                                                                                                                                                                       │
+│     6. Response Format                                                                                                                                                                │
+│                                                                                                                                                                                       │
+│     - Your deserializer examples show custom transformations. Should the library also support automatic Pydantic model deserialization?                                               │
+│     - What if the external service returns non-JSON responses?                                                                                                                        │
+│                                                                                                                                                                                       │
+│   Answer: Yes, let's support automatic Pydantic model serialization and deserialization. And for now, let's support JSON requests and responses only, but let's be sure that we can   │
+│   the correct architecture decisions to make the library extensible for XML, etc. request/response content in the future.                                                             │
+│                                                                                                                                                                                       │
+│     7. Service Discovery                                                                                                                                                              │
+│                                                                                                                                                                                       │
+│     - You mentioned "without the engineer needing to attend things like service discovery" - should the library support any form of dynamic base URL resolution, or will URLs always  │
+│   be static?                                                                                                                                                                          │
+│                                                                                                                                                                                       │
+│   Answer: For now, let's support only static URLs.                                                                                                                                    │
+│                                                                                                                                                                                       │
+│   Please think carefully about needed changed in the architecture, library structure and implementation plan, thank you!                                                              │
+│                                                                                                                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > Looks great! Before starting the implementation, let's add a Step 0 to the plan, "Document the approach and architecture". The purpose of this step is to generate a                │
+│   "docs/DESIGN.md" file where you put all the content related to the approach, architecture, design decisiones, dependencies, library artifacts and objects, library syntax, and      │
+│   implementation plan. So we can use it as reference in future iterations.                                                                                                            │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+

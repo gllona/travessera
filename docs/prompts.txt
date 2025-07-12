@@ -1,0 +1,58 @@
+# Prompts used to create Travessera with Claude Code
+
+## Initial Request
+"i want to implement a python library called travessera. travessera is an abstraction to microservices that allows developers to write external service calls as if they were local functions. it does it using decorators. the decorator is responsible for: connecting with HTTP with the external service, call the service, process the result, marshalling and unmarshalling, deal with timeouts and errors."
+
+## Design Feedback
+"wow! Impressive! This is my feedback about your questions:
+1. Query parameters and path parameters: Yes, absolutely. Path parameters should be inferred from the template (e.g., /users/{user_id}). Query parameters should be any function parameter that's not a path parameter or request body.
+2. Headers: Good defaults you mentioned. I like the headers factory for dynamic headers. Configuration for static headers is also useful.
+3. Error Handling: Both! Default HTTP status to exception mapping is great (like you proposed), but allowing custom exception mapping per endpoint is powerful. The decorator should catch HTTP errors and raise the appropriate Python exception.
+4. Validation: Since you mentioned Pydantic, that's perfect. Automatic validation for both request and response using type hints would be ideal.
+5. Function Signature: I love the idea of using type hints to determine how to handle parameters. Body parameter detection for POST/PUT/PATCH makes sense.
+6. Response Format: Type hints should drive this. If return type is a Pydantic model, validate and return it. If it's List[Model], handle accordingly. Raw dict/list for untyped responses.
+7. Service Discovery: Let's start simple with explicit base URLs. Service discovery can be a future enhancement. But the service registration pattern you showed is good.
+
+Additional thoughts:
+- Async support is crucial - love that you're thinking about both sync and async
+- The retry logic configuration is excellent
+- Connection pooling is important for production use
+- Your proposed configuration hierarchy (Travessera → Service → Endpoint) is perfect
+
+I think the API design you showed is clean and intuitive. Developers would love using this!"
+
+## Documentation Request
+"Looks great! Before starting the implementation, let's add a Step 0: Create comprehensive documentation
+Create a docs/DESIGN.md file that includes:
+- Overview of the library and its purpose
+- Detailed architecture and design decisions
+- Complete API documentation with examples
+- Configuration options and best practices
+- Development roadmap
+This will serve as our blueprint and ensure we have clear documentation from the start."
+
+## Implementation Phases
+1. "ok, let's proceed to the implementation!"
+2. "is it possible to install a virtualenv in '.venv' before running tests?"
+3. "yes, let's continue!"
+4. "yes, let's proceed!"
+5. "great! let's continue!"
+6. "[Request interrupted by user for tool use]before proceeding, let's read "docs/DESIGN.md""
+7. "ok, let's continue! remember we have a .env virtualenv"
+
+## Final Request
+"great! you are so great! is there anything i should do before pushing the library to Gihub, like a final run of integration tests?"
+
+## GitHub Push Request
+"ok, let's push the changes to Github. Include also the "docs/prompts.txt" with the prompts I have used with you, Claude Code."
+
+---
+
+This conversation resulted in the creation of Travessera, a Python library that abstracts microservice calls as local functions using decorators. The library features:
+- Full async/sync support
+- Pydantic integration for validation
+- Configurable retry logic
+- Custom exception mapping
+- Request/response transformers
+- Comprehensive test coverage (88%)
+- Professional packaging and documentation
