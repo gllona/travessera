@@ -1,0 +1,56 @@
+services:
+  # Pet-Veterinary API Server
+  vet-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pet-vet-server
+    ports:
+      - "8088:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - pet-vet-network
+
+  # Pet Appointment Client
+  vet-client:
+    build:
+      context: ../..
+      dockerfile: examples/docker/client/Dockerfile
+    container_name: pet-vet-client
+    depends_on:
+      vet-server:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
+    networks:
+      - pet-vet-network
+    # Override default command to keep container running for interactive use
+    command: tail -f /dev/null
+
+  # Demo client that runs a pre-defined scenario
+  vet-client-demo:
+    build:
+      context: ../..
+      dockerfile: examples/docker/client/Dockerfile
+    container_name: pet-vet-client-demo
+    depends_on:
+      vet-server:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - pet-vet-network
+    command: python client.py --demo
+
+networks:
+  pet-vet-network:
+    driver: bridge

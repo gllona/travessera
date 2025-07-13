@@ -107,10 +107,24 @@ class HTTPClient:
             # If we're in an async context, we need to handle this differently
             try:
                 loop = asyncio.get_running_loop()
-                loop.create_task(self._async_client.aclose())
+                if loop and not loop.is_closed():
+                    loop.create_task(self._async_client.aclose())
+                else:
+                    # Loop is closed, skip async cleanup
+                    pass
             except RuntimeError:
                 # No running loop, we're in sync context
-                asyncio.run(self._async_client.aclose())
+                try:
+                    asyncio.run(self._async_client.aclose())
+                except RuntimeError:
+                    # Event loop is gone during shutdown, skip cleanup
+                    import warnings
+
+                    warnings.warn(
+                        "HTTPClient async cleanup skipped: event loop unavailable",
+                        ResourceWarning,
+                        stacklevel=2,
+                    )
             self._async_client = None
 
     async def aclose(self) -> None:
@@ -122,9 +136,42 @@ class HTTPClient:
             await self._async_client.aclose()
             self._async_client = None
 
+    def __enter__(self) -> "HTTPClient":
+        """Enter sync context manager."""
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Exit sync context manager."""
+        self.close()
+
+    async def __aenter__(self) -> "HTTPClient":
+        """Enter async context manager."""
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Exit async context manager."""
+        await self.aclose()
+
     def __del__(self) -> None:
         """Cleanup clients on deletion."""
-        self.close()
+        try:
+            # Only attempt cleanup if clients exist
+            if hasattr(self, "_sync_client") and self._sync_client:
+                self._sync_client.close()
+            # For async client, just warn if not properly cleaned up
+            if hasattr(self, "_async_client") and self._async_client:
+                import warnings
+
+                warnings.warn(
+                    "HTTPClient was not properly closed. "
+                    "Use 'with client:' or 'async with client:' or call 'await client.aclose()'",
+                    ResourceWarning,
+                    stacklevel=2,
+                )
+        except Exception:
+            # Ignore all errors during cleanup in __del__
+            # This prevents the AsyncLibraryNotFoundError during shutdown
+            pass
 
     @contextmanager
     def _handle_request_errors(self) -> Iterator[None]:

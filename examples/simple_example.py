@@ -123,11 +123,13 @@ async def main():
     print("Travessera Simple Example")
     print("=" * 50)
 
-    # Run async example
-    await async_example()
+    # Use async context manager to ensure proper cleanup
+    async with travessera:
+        # Run async example
+        await async_example()
 
-    # Run sync example
-    sync_example()
+        # Run sync example
+        sync_example()
 
     print("\n" + "=" * 50)
     print("Example completed!")

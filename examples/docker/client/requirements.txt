@@ -1,0 +1,5 @@
+# Use local travessera package
+../../../
+
+# Additional dependencies
+pydantic==2.5.0

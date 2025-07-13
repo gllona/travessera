@@ -314,27 +314,29 @@ async def main():
     print("Travessera Advanced Example")
     print("=" * 60)
 
-    # Note: These examples won't actually run without real endpoints
-    # They demonstrate the API and patterns
+    # Use async context manager to ensure proper cleanup
+    async with travessera:
+        # Note: These examples won't actually run without real endpoints
+        # They demonstrate the API and patterns
 
-    print("\nThis example demonstrates the API patterns.")
-    print("In a real application, you would:")
-    print("1. Configure real service endpoints")
-    print("2. Set up proper authentication")
-    print("3. Handle responses from actual services")
+        print("\nThis example demonstrates the API patterns.")
+        print("In a real application, you would:")
+        print("1. Configure real service endpoints")
+        print("2. Set up proper authentication")
+        print("3. Handle responses from actual services")
 
-    print("\nExample patterns shown:")
-    print("- Multiple service configuration")
-    print("- Custom error mapping")
-    print("- Request/response transformers")
-    print("- Dynamic headers")
-    print("- Retry configuration")
-    print("- Service orchestration")
+        print("\nExample patterns shown:")
+        print("- Multiple service configuration")
+        print("- Custom error mapping")
+        print("- Request/response transformers")
+        print("- Dynamic headers")
+        print("- Retry configuration")
+        print("- Service orchestration")
 
-    # Uncomment these when using real endpoints:
-    # await complete_purchase_flow(user_id=123, items=["item1", "item2"], amount=150.00)
-    # await demonstrate_batch_operations()
-    # await demonstrate_error_handling()
+        # Uncomment these when using real endpoints:
+        # await complete_purchase_flow(user_id=123, items=["item1", "item2"], amount=150.00)
+        # await demonstrate_batch_operations()
+        # await demonstrate_error_handling()
 
 
 if __name__ == "__main__":

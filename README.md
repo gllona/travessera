@@ -26,42 +26,79 @@ A Python library that abstracts microservice calls as local functions, handling 
 pip install travessera
 ```
 
-## Quick Start
+## ⚡ Quick Start
+
+Transform remote API calls into simple function calls with just a few lines:
 
 ```python
-from travessera import Travessera, Service, ApiKeyAuthentication
+from travessera import Travessera, Service
 from pydantic import BaseModel
-import os
 
-# Define your models
+# 1. Define your data model
 class User(BaseModel):
     id: int
     name: str
     email: str
 
-# Configure service
-auth = ApiKeyAuthentication(api_key=os.getenv("API_KEY"))
-user_service = Service(
-    name="users",
-    base_url="https://api.example.com",
-    authentication=auth,
-)
+# 2. Configure the service
+service = Service(name="api", base_url="https://api.example.com")
+travessera = Travessera(services=[service])
 
-# Initialize Travessera
-travessera = Travessera(services=[user_service])
-
-# Define endpoints as simple functions
-@travessera.get("users", "/users/{user_id}")
+# 3. Transform functions into API calls
+@travessera.get("api", "/users/{user_id}")
 async def get_user(user_id: int) -> User:
-    pass
+    pass  # No implementation needed!
 
-# Use it like a normal function!
+@travessera.post("api", "/users")
+async def create_user(user: User) -> User:
+    pass  # Travessera handles everything
+
+# 4. Use them like normal functions
 async def main():
-    user = await get_user(123)
+    user = await get_user(123)          # GET /users/123
+    new_user = await create_user(user)  # POST /users
     print(f"Hello, {user.name}!")
 ```
 
-## Advanced Usage
+**That's it!** Travessera automatically handles:
+- ✅ HTTP requests and responses
+- ✅ JSON serialization/deserialization  
+- ✅ Type validation with Pydantic
+- ✅ Error handling and retries
+- ✅ Authentication and headers
+
+## 🎮 Examples
+
+### 🐾 Docker Example - Pet Appointment System
+**See Travessera in action with a complete microservices demo:**
+
+```bash
+git clone <repository>
+cd travessera/examples/docker
+docker compose up --build
+
+# Watch the automated demo
+docker compose logs -f vet-client-demo
+
+# Or try the interactive client
+docker compose exec vet-client python client.py
+```
+
+The Docker example demonstrates real-world usage with:
+- FastAPI server managing pets, veterinarians, and appointments in Barcelona
+- Travessera client with intelligent appointment booking logic
+- Geographic proximity matching and business workflows
+- **Server API explorer**: `http://localhost:8088/docs`
+
+**[📖 Full Docker Example Documentation →](examples/docker/README.md)**
+
+### 📚 More Examples
+- **Basic Usage**: Simple GET/POST operations
+- **Authentication**: API keys, Bearer tokens, custom auth
+- **Error Handling**: Custom exception mapping
+- **Advanced Features**: Request transformers, retry configuration
+
+## 🚀 Advanced Usage
 
 ### Query Parameters
 

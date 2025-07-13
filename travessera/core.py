@@ -101,6 +101,22 @@ class Service:
             await self._client.aclose()
             self._client = None
 
+    def __enter__(self) -> "Service":
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        """Context manager exit."""
+        self.close()
+
+    async def __aenter__(self) -> "Service":
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        """Async context manager exit."""
+        await self.aclose()
+
 
 class Travessera:
     """
