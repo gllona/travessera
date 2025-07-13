@@ -6,7 +6,6 @@ This example shows how to use Travessera to interact with a mock user API.
 """
 
 import asyncio
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -57,7 +56,7 @@ async def get_user(user_id: int) -> dict:
 
 
 @travessera.get("users", "/users")
-async def list_users(limit: Optional[int] = None) -> List[dict]:
+async def list_users(limit: int | None = None) -> list[dict]:
     """List all users."""
     pass
 

@@ -6,7 +6,7 @@ to work with Travessera.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -41,7 +41,7 @@ class Serializer(ABC):
         pass
 
     @abstractmethod
-    def deserialize(self, data: bytes, target_type: Type[T]) -> T:
+    def deserialize(self, data: bytes, target_type: type[T]) -> T:
         """
         Deserialize bytes to a Python object.
 

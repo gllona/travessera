@@ -1,7 +1,6 @@
 """Tests for the serializers module."""
 
 import json
-from typing import List
 
 import pytest
 from pydantic import BaseModel
@@ -113,7 +112,7 @@ def test_json_deserializer_pydantic_model():
 
     # List of models
     data = b'[{"id": 1, "name": "One"}, {"id": 2, "name": "Two", "active": false}]'
-    result = serializer.deserialize(data, List[TestModel])
+    result = serializer.deserialize(data, list[TestModel])
     assert len(result) == 2
     assert all(isinstance(item, TestModel) for item in result)
     assert result[0].id == 1
@@ -148,7 +147,7 @@ def test_json_deserializer_type_mismatch():
 
     # Expect list, get dict
     with pytest.raises(ResponseValidationError) as exc_info:
-        serializer.deserialize(b'{"key": "value"}', List[TestModel])
+        serializer.deserialize(b'{"key": "value"}', list[TestModel])
 
     assert "Expected list" in str(exc_info.value)
 

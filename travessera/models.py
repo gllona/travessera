@@ -5,8 +5,9 @@ This module defines Pydantic models used for configuration throughout
 the library.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, Tuple, Type
+from typing import Any
 
 from travessera.exceptions import NetworkError, ServerError
 
@@ -29,10 +30,10 @@ class RetryConfig:
     min_wait: float = 1.0
     max_wait: float = 10.0
     multiplier: float = 2.0
-    retry_on: Tuple[Type[Exception], ...] = field(
+    retry_on: tuple[type[Exception], ...] = field(
         default_factory=lambda: (NetworkError, ServerError)
     )
-    before_retry: Optional[Callable[[Any], None]] = None
+    before_retry: Callable[[Any], None] | None = None
 
     def __post_init__(self) -> None:
         """Validate configuration values."""

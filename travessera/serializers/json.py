@@ -6,7 +6,7 @@ and validation.
 """
 
 import json
-from typing import Any, List, Type, TypeVar, get_args, get_origin
+from typing import Any, TypeVar, get_args, get_origin
 
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
@@ -56,7 +56,7 @@ class JSONSerializer(Serializer):
                 {"data": str(data), "error": str(e)},
             ) from e
 
-    def deserialize(self, data: bytes, target_type: Type[T]) -> T:
+    def deserialize(self, data: bytes, target_type: type[T]) -> T:
         """
         Deserialize JSON bytes to a Python object.
 
@@ -87,7 +87,7 @@ class JSONSerializer(Serializer):
 
             # Handle List[Model] or list[Model]
             origin = get_origin(target_type)
-            if origin in (list, List):
+            if origin in (list, list):
                 args = get_args(target_type)
                 if (
                     args

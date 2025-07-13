@@ -5,18 +5,12 @@ This module defines type aliases, protocols, and other type-related
 utilities used throughout the library.
 """
 
+from collections.abc import Awaitable, Callable
 from typing import (
     Any,
-    Awaitable,
-    Callable,
-    Dict,
-    List,
     Literal,
-    Optional,
     Protocol,
-    Type,
     TypeVar,
-    Union,
     runtime_checkable,
 )
 
@@ -30,26 +24,23 @@ P = TypeVar("P")
 HTTPMethod = Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
 
 # Type for headers
-Headers = Dict[str, str]
+Headers = dict[str, str]
 
 # Type for query parameters
-QueryParams = Dict[str, Union[str, List[str], None]]
+QueryParams = dict[str, str | list[str] | None]
 
 # Type for JSON-serializable data
-JSONData = Union[None, bool, int, float, str, List["JSONData"], Dict[str, "JSONData"]]
+JSONData = None | bool | int | float | str | list["JSONData"] | dict[str, "JSONData"]
 
 # Type for request/response transformers
 RequestTransformer = Callable[[Any], Any]
 ResponseTransformer = Callable[[Any], Any]
 
 # Type for headers factory
-HeadersFactory = Callable[[Dict[str, Any]], Headers]
+HeadersFactory = Callable[[dict[str, Any]], Headers]
 
 # Type for endpoint functions
-EndpointFunction = Union[
-    Callable[..., T],
-    Callable[..., Awaitable[T]],
-]
+EndpointFunction = Callable[..., T] | Callable[..., Awaitable[T]]
 
 
 @runtime_checkable
@@ -73,7 +64,7 @@ class Serializer(Protocol):
         """
         ...
 
-    def deserialize(self, data: bytes, target_type: Type[T]) -> T:
+    def deserialize(self, data: bytes, target_type: type[T]) -> T:
         """
         Deserialize bytes to a Python object.
 
@@ -111,7 +102,7 @@ class Authentication(Protocol):
 class Cache(Protocol):
     """Protocol for cache implementations."""
 
-    async def get(self, key: str) -> Optional[Any]:
+    async def get(self, key: str) -> Any | None:
         """
         Get a value from the cache.
 
@@ -123,7 +114,7 @@ class Cache(Protocol):
         """
         ...
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    async def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """
         Set a value in the cache.
 
@@ -154,8 +145,8 @@ class Monitor(Protocol):
         endpoint: str,
         method: str,
         duration: float,
-        status_code: Optional[int] = None,
-        error: Optional[Exception] = None,
+        status_code: int | None = None,
+        error: Exception | None = None,
     ) -> None:
         """
         Record metrics for a request.
@@ -175,7 +166,7 @@ class Monitor(Protocol):
 class Tracer(Protocol):
     """Protocol for distributed tracing implementations."""
 
-    def start_span(self, name: str, attributes: Optional[Dict[str, Any]] = None) -> Any:
+    def start_span(self, name: str, attributes: dict[str, Any] | None = None) -> Any:
         """
         Start a new tracing span.
 
@@ -195,14 +186,14 @@ class EndpointConfig(BaseModel):
     service: str
     endpoint: str
     method: HTTPMethod
-    timeout: Optional[float] = None
-    headers: Optional[Headers] = None
-    headers_factory: Optional[HeadersFactory] = None
-    retry_config: Optional[Any] = None  # Will be RetryConfig when defined
-    request_transformer: Optional[RequestTransformer] = None
-    response_transformer: Optional[ResponseTransformer] = None
-    raises: Optional[Dict[int, Type[Exception]]] = None
-    serializer: Optional[Serializer] = None
+    timeout: float | None = None
+    headers: Headers | None = None
+    headers_factory: HeadersFactory | None = None
+    retry_config: Any | None = None  # Will be RetryConfig when defined
+    request_transformer: RequestTransformer | None = None
+    response_transformer: ResponseTransformer | None = None
+    raises: dict[int, type[Exception]] | None = None
+    serializer: Serializer | None = None
 
     model_config = {"arbitrary_types_allowed": True}
 
@@ -212,11 +203,11 @@ class ServiceConfig(BaseModel):
 
     name: str
     base_url: str
-    timeout: Optional[float] = None
-    authentication: Optional[Authentication] = None
-    headers: Optional[Headers] = None
-    retry_config: Optional[Any] = None  # Will be RetryConfig when defined
-    cache: Optional[Cache] = None
+    timeout: float | None = None
+    authentication: Authentication | None = None
+    headers: Headers | None = None
+    retry_config: Any | None = None  # Will be RetryConfig when defined
+    cache: Cache | None = None
 
     model_config = {"arbitrary_types_allowed": True}
 
@@ -225,9 +216,9 @@ class TravesseraConfig(BaseModel):
     """Global configuration for Travessera."""
 
     default_timeout: float = 30.0
-    default_headers: Optional[Headers] = None
-    retry_config: Optional[Any] = None  # Will be RetryConfig when defined
-    monitor: Optional[Monitor] = None
-    tracer: Optional[Tracer] = None
+    default_headers: Headers | None = None
+    retry_config: Any | None = None  # Will be RetryConfig when defined
+    monitor: Monitor | None = None
+    tracer: Tracer | None = None
 
     model_config = {"arbitrary_types_allowed": True}

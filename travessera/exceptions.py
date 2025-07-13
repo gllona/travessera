@@ -5,7 +5,7 @@ This module defines all exceptions that can be raised by the library,
 organized in a clear hierarchy for easy handling.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -55,7 +55,7 @@ class NetworkError(TravesseraError):
 class ConnectionError(NetworkError):
     """Raised when unable to connect to the service."""
 
-    def __init__(self, url: str, cause: Optional[Exception] = None) -> None:
+    def __init__(self, url: str, cause: Exception | None = None) -> None:
         self.url = url
         self.cause = cause
         message = f"Failed to connect to {url}"
@@ -88,8 +88,8 @@ class HTTPError(TravesseraError):
         self,
         message: str,
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message)
         self.request = request
@@ -97,7 +97,7 @@ class HTTPError(TravesseraError):
         self.status_code = response.status_code if response else None
 
     @property
-    def request_info(self) -> Dict[str, Any]:
+    def request_info(self) -> dict[str, Any]:
         """Get request information for debugging."""
         if not self.request:
             return {}
@@ -108,7 +108,7 @@ class HTTPError(TravesseraError):
         }
 
     @property
-    def response_info(self) -> Dict[str, Any]:
+    def response_info(self) -> dict[str, Any]:
         """Get response information for debugging."""
         if not self.response:
             return {}
@@ -136,8 +136,8 @@ class BadRequestError(ClientError):
         self,
         message: str = "Bad request",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -149,8 +149,8 @@ class UnauthorizedError(ClientError):
         self,
         message: str = "Unauthorized",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -162,8 +162,8 @@ class ForbiddenError(ClientError):
         self,
         message: str = "Forbidden",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -175,8 +175,8 @@ class NotFoundError(ClientError):
         self,
         message: str = "Not found",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -188,8 +188,8 @@ class ConflictError(ClientError):
         self,
         message: str = "Conflict",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -207,8 +207,8 @@ class InternalServerError(ServerError):
         self,
         message: str = "Internal server error",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -220,8 +220,8 @@ class BadGatewayError(ServerError):
         self,
         message: str = "Bad gateway",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -233,8 +233,8 @@ class ServiceUnavailableError(ServerError):
         self,
         message: str = "Service unavailable",
         *,
-        request: Optional[httpx.Request] = None,
-        response: Optional[httpx.Response] = None,
+        request: httpx.Request | None = None,
+        response: httpx.Response | None = None,
     ) -> None:
         super().__init__(message, request=request, response=response)
 
@@ -248,7 +248,7 @@ class ValidationError(TravesseraError):
 class RequestValidationError(ValidationError):
     """Raised when request data fails validation."""
 
-    def __init__(self, message: str, errors: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, message: str, errors: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.errors = errors or {}
 
@@ -256,12 +256,12 @@ class RequestValidationError(ValidationError):
 class ResponseValidationError(ValidationError):
     """Raised when response data fails validation."""
 
-    def __init__(self, message: str, errors: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, message: str, errors: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.errors = errors or {}
 
 
-HTTP_STATUS_TO_EXCEPTION: Dict[int, type[HTTPError]] = {
+HTTP_STATUS_TO_EXCEPTION: dict[int, type[HTTPError]] = {
     400: BadRequestError,
     401: UnauthorizedError,
     403: ForbiddenError,

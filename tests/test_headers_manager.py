@@ -1,6 +1,6 @@
 """Tests for headers manager module."""
 
-from typing import Any, Dict
+from typing import Any
 
 from travessera._internal.headers_manager import HeadersManager
 from travessera.types import Headers
@@ -24,7 +24,7 @@ class TestHeadersManager:
     def test_init_with_headers_factory(self):
         """Test initialization with headers factory."""
 
-        def factory(params: Dict[str, Any]) -> Headers:
+        def factory(params: dict[str, Any]) -> Headers:
             return {"X-Request-ID": str(params.get("id", "default"))}
 
         manager = HeadersManager(headers_factory=factory)
@@ -44,7 +44,7 @@ class TestHeadersManager:
         """Test getting headers with factory."""
         static = {"X-API-Key": "key"}
 
-        def factory(params: Dict[str, Any]) -> Headers:
+        def factory(params: dict[str, Any]) -> Headers:
             return {"X-User-ID": str(params["user_id"]), "X-Request-ID": "req-123"}
 
         manager = HeadersManager(static_headers=static, headers_factory=factory)
@@ -61,7 +61,7 @@ class TestHeadersManager:
         """Test that factory headers override static headers."""
         static = {"X-API-Key": "static-key", "X-Client": "static"}
 
-        def factory(params: Dict[str, Any]) -> Headers:
+        def factory(params: dict[str, Any]) -> Headers:
             return {"X-API-Key": "dynamic-key"}  # Override static
 
         manager = HeadersManager(static_headers=static, headers_factory=factory)
@@ -74,7 +74,7 @@ class TestHeadersManager:
         """Test get_headers with factory but no params."""
         static = {"X-API-Key": "key"}
 
-        def factory(params: Dict[str, Any]) -> Headers:
+        def factory(params: dict[str, Any]) -> Headers:
             return {"X-Dynamic": "value"}
 
         manager = HeadersManager(static_headers=static, headers_factory=factory)
@@ -179,7 +179,7 @@ class TestHeadersManager:
         """Test complex headers factory scenario."""
         static = {"X-API-Version": "1.0"}
 
-        def factory(params: Dict[str, Any]) -> Headers:
+        def factory(params: dict[str, Any]) -> Headers:
             headers = {}
             if "user_id" in params:
                 headers["X-User-ID"] = str(params["user_id"])

@@ -5,8 +5,9 @@ This module provides a registry for storing and retrieving
 endpoint configurations.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 from travessera.types import EndpointConfig, HTTPMethod
 
@@ -20,7 +21,7 @@ class RegisteredEndpoint:
     method: HTTPMethod
     function: Callable
     config: EndpointConfig
-    parsed_signature: Optional[Any] = None  # Will be ParsedSignature when available
+    parsed_signature: Any | None = None  # Will be ParsedSignature when available
 
 
 class EndpointRegistry:
@@ -34,10 +35,10 @@ class EndpointRegistry:
     def __init__(self) -> None:
         """Initialize the registry."""
         # Key format: "service_name.function_name"
-        self._endpoints: Dict[str, RegisteredEndpoint] = {}
+        self._endpoints: dict[str, RegisteredEndpoint] = {}
 
         # Additional index by function object
-        self._function_index: Dict[Callable, RegisteredEndpoint] = {}
+        self._function_index: dict[Callable, RegisteredEndpoint] = {}
 
     def register(
         self,
@@ -72,7 +73,7 @@ class EndpointRegistry:
         self._endpoints[key] = endpoint
         self._function_index[function] = endpoint
 
-    def get_by_key(self, key: str) -> Optional[RegisteredEndpoint]:
+    def get_by_key(self, key: str) -> RegisteredEndpoint | None:
         """
         Get an endpoint by its key.
 
@@ -84,7 +85,7 @@ class EndpointRegistry:
         """
         return self._endpoints.get(key)
 
-    def get_by_function(self, function: Callable) -> Optional[RegisteredEndpoint]:
+    def get_by_function(self, function: Callable) -> RegisteredEndpoint | None:
         """
         Get an endpoint by its function.
 
@@ -96,7 +97,7 @@ class EndpointRegistry:
         """
         return self._function_index.get(function)
 
-    def list_endpoints(self) -> Dict[str, RegisteredEndpoint]:
+    def list_endpoints(self) -> dict[str, RegisteredEndpoint]:
         """
         List all registered endpoints.
 

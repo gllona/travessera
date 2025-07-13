@@ -8,7 +8,8 @@ regular functions into HTTP API calls.
 import asyncio
 import functools
 import inspect
-from typing import Any, Callable, Dict, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from travessera._internal.config_resolver import ConfigResolver
 from travessera._internal.parameter_parser import ParameterParser
@@ -35,7 +36,7 @@ class EndpointDecorator:
         endpoint_path: str,
         method: HTTPMethod,
         config: EndpointConfig,
-        travessera_config: Dict[str, Any],
+        travessera_config: dict[str, Any],
         default_serializer: Serializer,
     ) -> None:
         """
@@ -172,8 +173,8 @@ class EndpointDecorator:
         self,
         func: Callable,
         args: tuple,
-        kwargs: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Convert positional arguments to keyword arguments.
 

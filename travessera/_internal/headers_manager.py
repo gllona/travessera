@@ -5,7 +5,7 @@ This module handles static and dynamic headers, merging them
 appropriately for each request.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from travessera.types import Headers, HeadersFactory
 
@@ -22,8 +22,8 @@ class HeadersManager:
 
     def __init__(
         self,
-        static_headers: Optional[Headers] = None,
-        headers_factory: Optional[HeadersFactory] = None,
+        static_headers: Headers | None = None,
+        headers_factory: HeadersFactory | None = None,
     ) -> None:
         """
         Initialize the headers manager.
@@ -35,7 +35,7 @@ class HeadersManager:
         self.static_headers = static_headers or {}
         self.headers_factory = headers_factory
 
-    def get_headers(self, request_params: Optional[Dict[str, Any]] = None) -> Headers:
+    def get_headers(self, request_params: dict[str, Any] | None = None) -> Headers:
         """
         Get the complete headers for a request.
 
@@ -59,7 +59,7 @@ class HeadersManager:
 
         return headers
 
-    def merge_with(self, additional_headers: Optional[Headers]) -> Headers:
+    def merge_with(self, additional_headers: Headers | None) -> Headers:
         """
         Merge current headers with additional headers.
 
@@ -77,7 +77,7 @@ class HeadersManager:
         return headers
 
     @staticmethod
-    def merge_headers(*header_dicts: Optional[Headers]) -> Headers:
+    def merge_headers(*header_dicts: Headers | None) -> Headers:
         """
         Merge multiple header dictionaries.
 

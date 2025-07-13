@@ -7,8 +7,9 @@ are path parameters, query parameters, or request body.
 
 import inspect
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Set, get_type_hints
+from typing import Any, get_type_hints
 
 from pydantic import BaseModel
 
@@ -30,10 +31,10 @@ class ParsedParameter:
 class ParsedSignature:
     """Parsed function signature information."""
 
-    parameters: Dict[str, ParsedParameter]
-    path_params: List[str]
-    query_params: List[str]
-    body_param: Optional[str]
+    parameters: dict[str, ParsedParameter]
+    path_params: list[str]
+    query_params: list[str]
+    body_param: str | None
     return_type: Any
 
 
@@ -48,7 +49,7 @@ class ParameterParser:
     """
 
     @staticmethod
-    def parse_endpoint_path(path: str) -> Set[str]:
+    def parse_endpoint_path(path: str) -> set[str]:
         """
         Extract parameter names from an endpoint path.
 
@@ -192,7 +193,7 @@ class ParameterParser:
         # Check for dict/list origins
         if hasattr(annotation, "__origin__"):
             origin = annotation.__origin__
-            if origin in (dict, Dict, list, List):
+            if origin in (dict, dict, list, list):
                 return True
 
         # Check if it's dict or list directly
@@ -202,8 +203,8 @@ class ParameterParser:
     def extract_path_values(
         path_template: str,
         parsed_sig: ParsedSignature,
-        kwargs: Dict[str, Any],
-    ) -> tuple[str, Dict[str, Any]]:
+        kwargs: dict[str, Any],
+    ) -> tuple[str, dict[str, Any]]:
         """
         Extract path parameter values and build the final path.
 
@@ -238,8 +239,8 @@ class ParameterParser:
     @staticmethod
     def extract_query_params(
         parsed_sig: ParsedSignature,
-        kwargs: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Extract query parameters from function arguments.
 
@@ -269,8 +270,8 @@ class ParameterParser:
     @staticmethod
     def extract_body_data(
         parsed_sig: ParsedSignature,
-        kwargs: Dict[str, Any],
-    ) -> Optional[Any]:
+        kwargs: dict[str, Any],
+    ) -> Any | None:
         """
         Extract request body data from function arguments.
 

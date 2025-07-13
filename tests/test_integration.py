@@ -1,6 +1,5 @@
 """Integration tests for Travessera."""
 
-from typing import List, Optional
 
 import httpx
 import pytest
@@ -177,7 +176,7 @@ def test_sync_get_with_query_params(travessera_instance):
     """Test synchronous GET with query parameters."""
 
     @travessera_instance.get("users", "/users")
-    def list_users(active: Optional[bool] = None) -> List[User]:
+    def list_users(active: bool | None = None) -> list[User]:
         pass
 
     # Get all users
@@ -297,7 +296,7 @@ def test_response_transformer(travessera_instance):
         "/users",
         response_transformer=extract_users,
     )
-    def list_users() -> List[User]:
+    def list_users() -> list[User]:
         pass
 
     users = list_users()

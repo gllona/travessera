@@ -5,7 +5,8 @@ This module contains the main Service and Travessera classes that form
 the foundation of the library.
 """
 
-from typing import Any, Callable, Dict, List, Optional, Type
+from collections.abc import Callable
+from typing import Any
 
 from travessera.authentication import Authentication
 from travessera.client import RetryableHTTPClient
@@ -35,11 +36,11 @@ class Service:
         self,
         name: str,
         base_url: str,
-        timeout: Optional[float] = None,
-        authentication: Optional[Authentication] = None,
-        headers: Optional[Headers] = None,
-        retry_config: Optional[RetryConfig] = None,
-        cache: Optional[Cache] = None,
+        timeout: float | None = None,
+        authentication: Authentication | None = None,
+        headers: Headers | None = None,
+        retry_config: RetryConfig | None = None,
+        cache: Cache | None = None,
     ) -> None:
         """
         Initialize a Service.
@@ -62,7 +63,7 @@ class Service:
         self.cache = cache
 
         # Create HTTP client for this service
-        self._client: Optional[RetryableHTTPClient] = None
+        self._client: RetryableHTTPClient | None = None
 
     @property
     def client(self) -> RetryableHTTPClient:
@@ -76,7 +77,7 @@ class Service:
             )
         return self._client
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Get the service configuration as a dictionary."""
         return {
             "name": self.name,
@@ -111,12 +112,12 @@ class Travessera:
 
     def __init__(
         self,
-        services: List[Service],
+        services: list[Service],
         default_timeout: float = 30.0,
-        default_headers: Optional[Headers] = None,
-        retry_config: Optional[RetryConfig] = None,
-        monitor: Optional[Monitor] = None,
-        tracer: Optional[Tracer] = None,
+        default_headers: Headers | None = None,
+        retry_config: RetryConfig | None = None,
+        monitor: Monitor | None = None,
+        tracer: Tracer | None = None,
     ) -> None:
         """
         Initialize Travessera.
@@ -140,7 +141,7 @@ class Travessera:
         self.default_serializer = JSONSerializer()
 
         # Endpoint registry
-        self._endpoints: Dict[str, Dict[str, Any]] = {}
+        self._endpoints: dict[str, dict[str, Any]] = {}
 
     def get_service(self, name: str) -> Service:
         """
@@ -159,7 +160,7 @@ class Travessera:
             raise ServiceNotFoundError(name)
         return self.services[name]
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Get the Travessera configuration as a dictionary."""
         return {
             "default_timeout": self.default_timeout,
@@ -175,14 +176,14 @@ class Travessera:
         endpoint: str,
         method: HTTPMethod = "GET",
         *,
-        timeout: Optional[float] = None,
-        headers: Optional[Headers] = None,
-        headers_factory: Optional[HeadersFactory] = None,
-        retry_config: Optional[RetryConfig] = None,
-        request_transformer: Optional[Callable[[Any], Any]] = None,
-        response_transformer: Optional[Callable[[Any], Any]] = None,
-        raises: Optional[Dict[int, Type[Exception]]] = None,
-        serializer: Optional[Serializer] = None,
+        timeout: float | None = None,
+        headers: Headers | None = None,
+        headers_factory: HeadersFactory | None = None,
+        retry_config: RetryConfig | None = None,
+        request_transformer: Callable[[Any], Any] | None = None,
+        response_transformer: Callable[[Any], Any] | None = None,
+        raises: dict[int, type[Exception]] | None = None,
+        serializer: Serializer | None = None,
     ) -> Callable[[EndpointFunction], EndpointFunction]:
         """
         Decorator for defining an endpoint.

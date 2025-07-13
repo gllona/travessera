@@ -1,6 +1,5 @@
 """Tests for the parameter parser module."""
 
-from typing import List, Optional
 
 import pytest
 from pydantic import BaseModel
@@ -107,13 +106,13 @@ def test_parse_function_mixed_params():
 def test_parse_function_list_body():
     """Test parsing function with list as body."""
 
-    def create_users(users: List[UserModel]) -> List[UserModel]:
+    def create_users(users: list[UserModel]) -> list[UserModel]:
         pass
 
     parsed = ParameterParser.parse_function(create_users, "/users/batch", "POST")
 
     assert parsed.body_param == "users"
-    assert parsed.parameters["users"].annotation == List[UserModel]
+    assert parsed.parameters["users"].annotation == list[UserModel]
 
 
 def test_parse_function_dict_body():
@@ -176,8 +175,8 @@ def test_extract_query_params():
     """Test extracting query parameters."""
 
     def search_users(
-        name: str, age: Optional[int] = None, active: bool = True
-    ) -> List[dict]:
+        name: str, age: int | None = None, active: bool = True
+    ) -> list[dict]:
         pass
 
     parsed = ParameterParser.parse_function(search_users, "/users/search", "GET")

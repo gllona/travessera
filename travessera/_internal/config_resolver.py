@@ -5,8 +5,9 @@ This module implements the three-level configuration hierarchy where
 settings cascade from global (Travessera) to service to endpoint level.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any
 
 from travessera.models import RetryConfig
 from travessera.types import Headers, HeadersFactory, Serializer
@@ -27,23 +28,23 @@ class ResolvedConfig:
 
     # Headers
     headers: Headers
-    headers_factory: Optional[HeadersFactory]
+    headers_factory: HeadersFactory | None
 
     # Authentication (handled separately by Service)
     # authentication: Optional[Authentication]
 
     # Retry configuration
-    retry_config: Optional[RetryConfig]
+    retry_config: RetryConfig | None
 
     # Serialization
     serializer: Serializer
 
     # Transformers
-    request_transformer: Optional[Callable[[Any], Any]]
-    response_transformer: Optional[Callable[[Any], Any]]
+    request_transformer: Callable[[Any], Any] | None
+    response_transformer: Callable[[Any], Any] | None
 
     # Error mapping
-    raises: Optional[Dict[int, Type[Exception]]]
+    raises: dict[int, type[Exception]] | None
 
 
 class ConfigResolver:
@@ -58,7 +59,7 @@ class ConfigResolver:
     """
 
     @staticmethod
-    def merge_headers(*header_dicts: Optional[Headers]) -> Headers:
+    def merge_headers(*header_dicts: Headers | None) -> Headers:
         """
         Merge multiple header dictionaries.
 
@@ -78,9 +79,9 @@ class ConfigResolver:
 
     @staticmethod
     def resolve(
-        travessera_config: Dict[str, Any],
-        service_config: Dict[str, Any],
-        endpoint_config: Dict[str, Any],
+        travessera_config: dict[str, Any],
+        service_config: dict[str, Any],
+        endpoint_config: dict[str, Any],
         default_serializer: Serializer,
     ) -> ResolvedConfig:
         """
@@ -150,10 +151,10 @@ class ConfigResolver:
 
     @staticmethod
     def merge_configs(
-        base: Dict[str, Any],
-        override: Dict[str, Any],
-        merge_keys: Optional[set[str]] = None,
-    ) -> Dict[str, Any]:
+        base: dict[str, Any],
+        override: dict[str, Any],
+        merge_keys: set[str] | None = None,
+    ) -> dict[str, Any]:
         """
         Merge two configuration dictionaries.
 

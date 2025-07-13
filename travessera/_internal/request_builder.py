@@ -5,7 +5,7 @@ This module builds HTTP requests from function calls, handling
 path parameters, query parameters, headers, and request bodies.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from travessera._internal.config_resolver import ResolvedConfig
 from travessera._internal.headers_manager import HeadersManager
@@ -30,7 +30,7 @@ class RequestBuilder:
         self,
         config: ResolvedConfig,
         parsed_signature: ParsedSignature,
-        authentication: Optional[Authentication] = None,
+        authentication: Authentication | None = None,
     ) -> None:
         """
         Initialize the request builder.
@@ -51,8 +51,8 @@ class RequestBuilder:
     def build_url(
         self,
         endpoint_template: str,
-        kwargs: Dict[str, Any],
-    ) -> tuple[str, Dict[str, Any]]:
+        kwargs: dict[str, Any],
+    ) -> tuple[str, dict[str, Any]]:
         """
         Build the complete URL with path parameters.
 
@@ -83,8 +83,8 @@ class RequestBuilder:
 
     def build_headers(
         self,
-        kwargs: Dict[str, Any],
-        content_type: Optional[str] = None,
+        kwargs: dict[str, Any],
+        content_type: str | None = None,
     ) -> Headers:
         """
         Build request headers.
@@ -111,8 +111,8 @@ class RequestBuilder:
 
     def build_body(
         self,
-        kwargs: Dict[str, Any],
-    ) -> Optional[bytes]:
+        kwargs: dict[str, Any],
+    ) -> bytes | None:
         """
         Build request body.
 
@@ -142,8 +142,8 @@ class RequestBuilder:
         self,
         method: str,
         endpoint_template: str,
-        kwargs: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Build complete kwargs for httpx request.
 
@@ -189,8 +189,8 @@ class RequestBuilder:
 
     def apply_authentication(
         self,
-        request_kwargs: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        request_kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Apply authentication to request.
 

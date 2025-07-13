@@ -6,7 +6,8 @@ with configuration specific to HTTP requests.
 """
 
 import logging
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from tenacity import (
     RetryCallState,
@@ -69,7 +70,7 @@ def create_retry_logic(config: RetryConfig) -> Retrying:
 
 def with_retry(
     func: Callable[..., Any],
-    config: Optional[RetryConfig] = None,
+    config: RetryConfig | None = None,
 ) -> Callable[..., Any]:
     """
     Wrap a function with retry logic.
@@ -95,7 +96,7 @@ def with_retry(
 
 async def with_retry_async(
     func: Callable[..., Any],
-    config: Optional[RetryConfig] = None,
+    config: RetryConfig | None = None,
     *args: Any,
     **kwargs: Any,
 ) -> Any:

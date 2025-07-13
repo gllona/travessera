@@ -6,8 +6,9 @@ HTTP requests with connection pooling, timeouts, and error handling.
 """
 
 import asyncio
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Any, Iterator, Optional
+from typing import Any
 
 import httpx
 
@@ -37,11 +38,11 @@ class HTTPClient:
 
     def __init__(
         self,
-        base_url: Optional[str] = None,
-        headers: Optional[Headers] = None,
+        base_url: str | None = None,
+        headers: Headers | None = None,
         timeout: float = 30.0,
-        connection_config: Optional[ConnectionConfig] = None,
-        retry_config: Optional[RetryConfig] = None,
+        connection_config: ConnectionConfig | None = None,
+        retry_config: RetryConfig | None = None,
     ) -> None:
         """
         Initialize the HTTP client.
@@ -67,8 +68,8 @@ class HTTPClient:
         )
 
         # Initialize clients (created lazily)
-        self._sync_client: Optional[httpx.Client] = None
-        self._async_client: Optional[httpx.AsyncClient] = None
+        self._sync_client: httpx.Client | None = None
+        self._async_client: httpx.AsyncClient | None = None
         self._limits = limits
 
     @property
@@ -147,11 +148,11 @@ class HTTPClient:
         method: str,
         url: str,
         *,
-        params: Optional[dict[str, Any]] = None,
-        json: Optional[Any] = None,
-        data: Optional[Any] = None,
-        headers: Optional[Headers] = None,
-        timeout: Optional[float] = None,
+        params: dict[str, Any] | None = None,
+        json: Any | None = None,
+        data: Any | None = None,
+        headers: Headers | None = None,
+        timeout: float | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
         """
@@ -200,11 +201,11 @@ class HTTPClient:
         method: str,
         url: str,
         *,
-        params: Optional[dict[str, Any]] = None,
-        json: Optional[Any] = None,
-        data: Optional[Any] = None,
-        headers: Optional[Headers] = None,
-        timeout: Optional[float] = None,
+        params: dict[str, Any] | None = None,
+        json: Any | None = None,
+        data: Any | None = None,
+        headers: Headers | None = None,
+        timeout: float | None = None,
         **kwargs: Any,
     ) -> httpx.Response:
         """

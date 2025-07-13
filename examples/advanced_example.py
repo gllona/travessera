@@ -13,7 +13,6 @@ This example shows:
 import asyncio
 import uuid
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -51,7 +50,7 @@ class User(BaseModel):
 class Order(BaseModel):
     id: int
     user_id: int
-    items: List[str]
+    items: list[str]
     total: float
     status: str = "pending"
 
@@ -200,15 +199,15 @@ async def process_payment(payment: Payment) -> PaymentResult:
 async def list_users(
     page: int = 1,
     per_page: int = 50,
-    status: Optional[str] = None,
-    created_after: Optional[datetime] = None,
-) -> List[User]:
+    status: str | None = None,
+    created_after: datetime | None = None,
+) -> list[User]:
     """List users with complex query parameters."""
     pass
 
 
 # Demonstrate chaining multiple service calls
-async def complete_purchase_flow(user_id: int, items: List[str], amount: float):
+async def complete_purchase_flow(user_id: int, items: list[str], amount: float):
     """
     Complete purchase flow across multiple services.
 
