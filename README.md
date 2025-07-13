@@ -1,6 +1,6 @@
 # Travessera
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/)
 [![Coverage](https://img.shields.io/badge/coverage-88%25-green)](tests/)
