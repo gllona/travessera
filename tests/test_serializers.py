@@ -9,8 +9,8 @@ from travessera.exceptions import RequestValidationError, ResponseValidationErro
 from travessera.serializers import JSONSerializer, get_serializer
 
 
-class TestModel(BaseModel):
-    """Test Pydantic model."""
+class SampleModel(BaseModel):
+    """Sample Pydantic model for testing."""
 
     id: int
     name: str
@@ -48,14 +48,14 @@ def test_json_serializer_pydantic_model():
     serializer = JSONSerializer()
 
     # Single model
-    model = TestModel(id=1, name="Test")
+    model = SampleModel(id=1, name="Test")
     serialized = serializer.serialize(model)
     assert json.loads(serialized) == {"id": 1, "name": "Test", "active": True}
 
     # List of models
     models = [
-        TestModel(id=1, name="One"),
-        TestModel(id=2, name="Two", active=False),
+        SampleModel(id=1, name="One"),
+        SampleModel(id=2, name="Two", active=False),
     ]
     serialized = serializer.serialize(models)
     assert json.loads(serialized) == [
@@ -104,17 +104,17 @@ def test_json_deserializer_pydantic_model():
 
     # Single model
     data = b'{"id": 1, "name": "Test"}'
-    result = serializer.deserialize(data, TestModel)
-    assert isinstance(result, TestModel)
+    result = serializer.deserialize(data, SampleModel)
+    assert isinstance(result, SampleModel)
     assert result.id == 1
     assert result.name == "Test"
     assert result.active is True
 
     # List of models
     data = b'[{"id": 1, "name": "One"}, {"id": 2, "name": "Two", "active": false}]'
-    result = serializer.deserialize(data, list[TestModel])
+    result = serializer.deserialize(data, list[SampleModel])
     assert len(result) == 2
-    assert all(isinstance(item, TestModel) for item in result)
+    assert all(isinstance(item, SampleModel) for item in result)
     assert result[0].id == 1
     assert result[1].active is False
 
@@ -135,7 +135,7 @@ def test_json_deserializer_validation_error():
 
     # Missing required field
     with pytest.raises(ResponseValidationError) as exc_info:
-        serializer.deserialize(b'{"id": 1}', TestModel)
+        serializer.deserialize(b'{"id": 1}', SampleModel)
 
     assert "Failed to validate response data" in str(exc_info.value)
     assert "errors" in exc_info.value.errors
@@ -147,7 +147,7 @@ def test_json_deserializer_type_mismatch():
 
     # Expect list, get dict
     with pytest.raises(ResponseValidationError) as exc_info:
-        serializer.deserialize(b'{"key": "value"}', list[TestModel])
+        serializer.deserialize(b'{"key": "value"}', list[SampleModel])
 
     assert "Expected list" in str(exc_info.value)
 

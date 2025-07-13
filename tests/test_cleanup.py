@@ -168,8 +168,12 @@ class TestHTTPClientCleanup:
         # Create async client
         async_client = client.async_client
 
+        # Mock aclose as a simple mock that returns None when called
+        mock_aclose = Mock()
+        mock_aclose.return_value = None
+
         with (
-            patch.object(async_client, "aclose", new_callable=AsyncMock),
+            patch.object(async_client, "aclose", mock_aclose),
             patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")),
             patch("asyncio.run") as mock_run,
         ):
@@ -183,10 +187,13 @@ class TestHTTPClientCleanup:
         """Test close method when event loop is unavailable during shutdown."""
         client = HTTPClient(base_url=TEST_BASE_URL)
 
-        # Create async client
-        _ = client.async_client
+        # Create async client but mock it to avoid coroutine warnings
+        async_client = client.async_client
+        mock_aclose = Mock()
+        mock_aclose.return_value = None
 
         with (
+            patch.object(async_client, "aclose", mock_aclose),
             patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")),
             patch("asyncio.run", side_effect=RuntimeError("Loop unavailable")),
             warnings.catch_warnings(record=True) as w,
@@ -212,7 +219,11 @@ class TestServiceCleanup:
         # Access client to create it
         client = service.client
 
-        with patch.object(client, "close") as mock_close:
+        # Ensure async client is not created by preventing lazy initialization
+        with (
+            patch.object(client, "close") as mock_close,
+            patch.object(client, "_async_client", None),
+        ):
             service.close()
             mock_close.assert_called_once()
 
@@ -336,9 +347,13 @@ class TestRetryableHTTPClientCleanup:
         # Access async client to create it
         async_client = client.async_client
 
-        with patch.object(
-            async_client, "aclose", new_callable=AsyncMock
-        ) as mock_aclose:
+        # Create a simple mock instead of AsyncMock to avoid coroutine warnings
+        mock_aclose = Mock()
+
+        async def async_mock():
+            mock_aclose()
+
+        with patch.object(async_client, "aclose", side_effect=async_mock):
             await client.aclose()
             mock_aclose.assert_called_once()
 
