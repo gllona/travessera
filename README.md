@@ -98,6 +98,15 @@ The Docker example demonstrates real-world usage with:
 - **Error Handling**: Custom exception mapping
 - **Advanced Features**: Request transformers, retry configuration
 
+## About the Name
+
+Travessera is inspired by the name of some streets in Barcelona, which are called "Travessera" in Catalan. In the District of Gràcia, there are two travesseras: The [Travessera de Gràcia](https://ca.wikipedia.org/wiki/Travessera_de_Gr%C3%A0cia) at the south, and the [Travessera del Dalt](https://ca.wikipedia.org/wiki/Travessera_de_Dalt) at the north. The street names reflect their function as streets that cross Gràcia. The "travessera" part of the name means "cross street" or "transversal".
+
+Travessera's goal is to make easy to cross from your code to other API services, in the same way that FastAPI, Flask and Quart API libraries make easy to other services to cross into your code.
+
+![My dog and I in a walk in Barcelona](./docs/images/dog_walk.jpg)
+*My dog and I in a Walk at the Travessera del Dalt's extension at the west known as Ronda del General Mitre, just in the second day of building this library. Also displayed is a hand-made mosaic mural [like this one](https://www.teas.cat/cat/projecte/projecte-trossets) in Gràcia.*
+
 ## 🚀 Advanced Usage
 
 ### Query Parameters
@@ -458,6 +467,11 @@ For more detailed documentation, see the [docs/](docs/) directory:
 - [Design Document](docs/DESIGN.md) - Architecture and design decisions
 - [API Reference](docs/API.md) - Complete API documentation
 - [Examples](docs/examples/) - More usage examples
+
+## Idea and Initial Development
+
+- [Gorka Llona](https://desarrolladores.logicos.org/gorka/)
+- [Claude Code](https://claude.ai)
 
 ## Contributing
 
