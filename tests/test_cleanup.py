@@ -92,7 +92,7 @@ class TestHTTPClientCleanup:
         client = HTTPClient(base_url=TEST_BASE_URL)
 
         # Create only async client
-        async_client = client.async_client
+        _ = client.async_client
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -111,21 +111,20 @@ class TestHTTPClientCleanup:
 
         # Create both clients
         sync_client = client.sync_client
-        async_client = client.async_client
+        _ = client.async_client
 
-        with patch.object(sync_client, "close") as mock_close:
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
+        with patch.object(sync_client, "close") as mock_close, warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
 
-                # Simulate garbage collection
-                client.__del__()
+            # Simulate garbage collection
+            client.__del__()
 
-                # Sync client should be closed
-                mock_close.assert_called_once()
+            # Sync client should be closed
+            mock_close.assert_called_once()
 
-                # Should warn about async client
-                assert len(w) == 1
-                assert issubclass(w[0].category, ResourceWarning)
+            # Should warn about async client
+            assert len(w) == 1
+            assert issubclass(w[0].category, ResourceWarning)
 
     def test_del_method_no_errors_on_exception(self):
         """Test __del__ method handles exceptions gracefully."""
@@ -169,33 +168,30 @@ class TestHTTPClientCleanup:
 
         with patch.object(
             async_client, "aclose", new_callable=AsyncMock
-        ), patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")):
-            with patch("asyncio.run") as mock_run:
-                # Call close (sync method) with no running loop
-                client.close()
+        ), patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")), patch("asyncio.run") as mock_run:
+            # Call close (sync method) with no running loop
+            client.close()
 
-                # Should attempt to run aclose
-                mock_run.assert_called_once()
+            # Should attempt to run aclose
+            mock_run.assert_called_once()
 
     def test_close_with_loop_unavailable_during_shutdown(self):
         """Test close method when event loop is unavailable during shutdown."""
         client = HTTPClient(base_url=TEST_BASE_URL)
 
         # Create async client
-        async_client = client.async_client
+        _ = client.async_client
 
-        with patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")):
-            with patch("asyncio.run", side_effect=RuntimeError("Loop unavailable")):
-                with warnings.catch_warnings(record=True) as w:
-                    warnings.simplefilter("always")
+        with patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")), patch("asyncio.run", side_effect=RuntimeError("Loop unavailable")), warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
 
-                    # Call close - should handle gracefully
-                    client.close()
+            # Call close - should handle gracefully
+            client.close()
 
-                    # Should issue warning about skipped cleanup
-                    assert len(w) == 1
-                    assert issubclass(w[0].category, ResourceWarning)
-                    assert "async cleanup skipped" in str(w[0].message)
+            # Should issue warning about skipped cleanup
+            assert len(w) == 1
+            assert issubclass(w[0].category, ResourceWarning)
+            assert "async cleanup skipped" in str(w[0].message)
 
 
 class TestServiceCleanup:
@@ -261,11 +257,10 @@ class TestTravesseraCleanup:
         client1 = service1.client
         client2 = service2.client
 
-        with patch.object(client1, "close") as mock_close1:
-            with patch.object(client2, "close") as mock_close2:
-                travessera.close()
-                mock_close1.assert_called_once()
-                mock_close2.assert_called_once()
+        with patch.object(client1, "close") as mock_close1, patch.object(client2, "close") as mock_close2:
+            travessera.close()
+            mock_close1.assert_called_once()
+            mock_close2.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_travessera_aclose(self):
@@ -278,13 +273,12 @@ class TestTravesseraCleanup:
         client1 = service1.client
         client2 = service2.client
 
-        with patch.object(client1, "aclose", new_callable=AsyncMock) as mock_aclose1:
-            with patch.object(
+        with patch.object(client1, "aclose", new_callable=AsyncMock) as mock_aclose1, patch.object(
                 client2, "aclose", new_callable=AsyncMock
             ) as mock_aclose2:
-                await travessera.aclose()
-                mock_aclose1.assert_called_once()
-                mock_aclose2.assert_called_once()
+            await travessera.aclose()
+            mock_aclose1.assert_called_once()
+            mock_aclose2.assert_called_once()
 
     def test_travessera_sync_context_manager(self):
         """Test Travessera sync context manager."""
@@ -368,9 +362,8 @@ class TestCleanupIntegration:
         service1 = Service("api1", "https://api1.example.com")
         service2 = Service("api2", "https://api2.example.com")
 
-        with service1, service2:
-            with Travessera(services=[service1, service2]) as travessera:
-                assert len(travessera.services) == 2
+        with service1, service2, Travessera(services=[service1, service2]) as travessera:
+            assert len(travessera.services) == 2
 
         # All should be cleaned up
         assert service1._client is None
