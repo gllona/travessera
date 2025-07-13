@@ -239,4 +239,12 @@ ruff check travessera/decorators.py --fix
 4. **Metrics/Monitoring**: No built-in metrics. Could add OpenTelemetry support
 5. **WebSocket/GraphQL**: Currently HTTP-only. Architecture supports protocol extensions
 
+## Development Memory
+
+- All python runs will use a virtualenv in the .venv directory. Remember to activate the virtualenv before running python or using pip.
+
 Remember: Always run black and ruff before committing. The CI will fail otherwise!
+
+## Pre-Commit Checklist
+
+- Remember to run: 1. ruff, 2. black, 3. all tests, before commiting code to git.
