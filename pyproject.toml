@@ -74,6 +74,8 @@ target-version = ["py38", "py39", "py310", "py311", "py312"]
 [tool.ruff]
 line-length = 88
 target-version = "py38"
+
+[tool.ruff.lint]
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
@@ -90,9 +92,16 @@ ignore = [
     "B008",  # do not perform function calls in argument defaults
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # unused imports in __init__ files
-"tests/*" = ["S101"]      # assert statements in tests
+"tests/*" = [
+    "S101",  # assert statements in tests
+    "N818",  # exception names in tests can omit Error suffix
+    "E721",  # type comparisons in tests are ok
+]
+"examples/*" = [
+    "N818",  # exception names in examples can omit Error suffix for clarity
+]
 
 [tool.mypy]
 python_version = "3.8"
