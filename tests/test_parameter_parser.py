@@ -1,6 +1,5 @@
 """Tests for the parameter parser module."""
 
-
 import pytest
 from pydantic import BaseModel
 

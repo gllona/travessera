@@ -1,6 +1,5 @@
 """Integration tests for Travessera."""
 
-
 import httpx
 import pytest
 from pydantic import BaseModel
