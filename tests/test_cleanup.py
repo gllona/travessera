@@ -70,9 +70,7 @@ class TestHTTPClientCleanup:
             async_client = client.async_client
 
             # Mock aclose to verify it's called
-            with patch.object(
-                async_client, "aclose", new_callable=AsyncMock
-            ):
+            with patch.object(async_client, "aclose", new_callable=AsyncMock):
                 pass  # Context manager will call aclose on exit
 
     def test_del_method_sync_only(self):
@@ -113,7 +111,10 @@ class TestHTTPClientCleanup:
         sync_client = client.sync_client
         _ = client.async_client
 
-        with patch.object(sync_client, "close") as mock_close, warnings.catch_warnings(record=True) as w:
+        with (
+            patch.object(sync_client, "close") as mock_close,
+            warnings.catch_warnings(record=True) as w,
+        ):
             warnings.simplefilter("always")
 
             # Simulate garbage collection
@@ -146,9 +147,10 @@ class TestHTTPClientCleanup:
         # Create async client
         async_client = client.async_client
 
-        with patch.object(
-            async_client, "aclose", new_callable=AsyncMock
-        ), patch("asyncio.get_running_loop") as mock_get_loop:
+        with (
+            patch.object(async_client, "aclose", new_callable=AsyncMock),
+            patch("asyncio.get_running_loop") as mock_get_loop,
+        ):
             mock_loop = Mock()
             mock_loop.is_closed.return_value = False
             mock_get_loop.return_value = mock_loop
@@ -166,9 +168,11 @@ class TestHTTPClientCleanup:
         # Create async client
         async_client = client.async_client
 
-        with patch.object(
-            async_client, "aclose", new_callable=AsyncMock
-        ), patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")), patch("asyncio.run") as mock_run:
+        with (
+            patch.object(async_client, "aclose", new_callable=AsyncMock),
+            patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")),
+            patch("asyncio.run") as mock_run,
+        ):
             # Call close (sync method) with no running loop
             client.close()
 
@@ -182,7 +186,11 @@ class TestHTTPClientCleanup:
         # Create async client
         _ = client.async_client
 
-        with patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")), patch("asyncio.run", side_effect=RuntimeError("Loop unavailable")), warnings.catch_warnings(record=True) as w:
+        with (
+            patch("asyncio.get_running_loop", side_effect=RuntimeError("No loop")),
+            patch("asyncio.run", side_effect=RuntimeError("Loop unavailable")),
+            warnings.catch_warnings(record=True) as w,
+        ):
             warnings.simplefilter("always")
 
             # Call close - should handle gracefully
@@ -257,7 +265,10 @@ class TestTravesseraCleanup:
         client1 = service1.client
         client2 = service2.client
 
-        with patch.object(client1, "close") as mock_close1, patch.object(client2, "close") as mock_close2:
+        with (
+            patch.object(client1, "close") as mock_close1,
+            patch.object(client2, "close") as mock_close2,
+        ):
             travessera.close()
             mock_close1.assert_called_once()
             mock_close2.assert_called_once()
@@ -273,9 +284,10 @@ class TestTravesseraCleanup:
         client1 = service1.client
         client2 = service2.client
 
-        with patch.object(client1, "aclose", new_callable=AsyncMock) as mock_aclose1, patch.object(
-                client2, "aclose", new_callable=AsyncMock
-            ) as mock_aclose2:
+        with (
+            patch.object(client1, "aclose", new_callable=AsyncMock) as mock_aclose1,
+            patch.object(client2, "aclose", new_callable=AsyncMock) as mock_aclose2,
+        ):
             await travessera.aclose()
             mock_aclose1.assert_called_once()
             mock_aclose2.assert_called_once()
@@ -362,7 +374,11 @@ class TestCleanupIntegration:
         service1 = Service("api1", "https://api1.example.com")
         service2 = Service("api2", "https://api2.example.com")
 
-        with service1, service2, Travessera(services=[service1, service2]) as travessera:
+        with (
+            service1,
+            service2,
+            Travessera(services=[service1, service2]) as travessera,
+        ):
             assert len(travessera.services) == 2
 
         # All should be cleaned up
